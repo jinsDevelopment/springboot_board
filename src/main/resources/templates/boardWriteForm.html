@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <title>게시판 등록</title>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet"
+        href="https://cdn.jsdelivr.net/npm/bootswatch@4.5.2/dist/sandstone/bootstrap.min.css">
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/js/bootstrap.min.js"></script>
+  <script>
+    function boardWrite() {
+      let writer = $('#writer').val()
+      let title = $('#title').val()
+      let contents = $('#contents').val()
+
+      if(!isValidContents(title, contents, writer)){
+        return false;
+      }
+
+      let data = {
+        "writer": writer,
+        "title": title,
+        "contents": contents
+      }
+
+      $.ajax({
+        type: "POST",
+        url: "/api/board/write", // 요청할 주소
+        data: JSON.stringify(data)
+        , // 여기에 json을 넣어주면 된다!
+        dataType: "json",
+        contentType: "application/json",
+        success: function (res) {
+          if (res['res'] == "success") {
+            alert("저장이 완료되었습니다.");
+            window.location.href = "/";
+          }
+        }
+      });
+
+    }
+
+    function boardUpdate(id){
+      let writer = $('#writer').val()
+      let title = $('#title').val()
+      let contents = $('#contents').val()
+
+      if(!isValidContents(title, contents, writer)){
+        return false;
+      }
+
+      let data = {
+        "writer": writer,
+        "title": title,
+        "contents": contents
+      }
+
+      $.ajax({
+        type: "PUT",
+        url: "/api/board/update/"+id, // 요청할 주소
+        data: JSON.stringify(data)
+        , // 여기에 json을 넣어주면 된다!
+        dataType: "json",
+        contentType: "application/json",
+        success: function (res) {
+          if (res['res'] == "success") {
+            alert("수정이 완료되었습니다.");
+            window.location.href = "/api/board/" + id;
+          }
+        }
+      });
+
+    }
+
+    function isValidContents(title, contents, writer) {
+      if (title == '') {
+        alert('제목을 입력해주세요');
+        return false;
+      }
+
+      if (writer == '') {
+        alert('작성자를 입력해 주세요');
+        return false;
+      }
+
+      if (contents == '') {
+        alert('댓글을 입력해주세요');
+        return false;
+      }
+
+      if (contents.trim().length > 140) {
+        alert('공백 포함 140자 이하로 입력해주세요');
+        return false;
+      }
+
+      return true;
+    }
+
+  </script>
+</head>
+
+<body>
+<nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+  <div class="container-fluid">
+    <a class="navbar-brand">게시판</a>
+    <button class="navbar-toggler" type="button" data-bs-toggle="collapse"
+            data-bs-target="#navbarColor01" aria-controls="navbarColor01" aria-expanded="false"
+            aria-label="Toggle navigation">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+
+    <div class="collapse navbar-collapse" id="navbarColor01">
+      <ul class="navbar-nav me-auto">
+        <li class="nav-item">
+          <a class="nav-link" style="font-size: 15px" href="/">글 목록</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" style="font-size: 15px" href="/api/board/writeForm">글 쓰기</a>
+        </li>
+      </ul>
+    </div>
+  </div>
+</nav>
+
+<main role="main" class="container">
+
+  <div class="bs-docs-section">
+    <div class="row">
+      <div class="col-lg-12">
+        <div class="page-header">
+          <h1 th:id="forms" style="margin-top: 20px;" th:if="${board}">글 수정</h1>
+          <h1 th:id="forms" style="margin-top: 20px;" th:unless="${board}">글 쓰기</h1>
+        </div>
+      </div>
+    </div>
+
+    <div class="row">
+      <div class="col-lg">
+        <div class="bs-component">
+          <form>
+            <fieldset>
+              <!--              <fieldset class="form-group">-->
+
+              <div class="form-group" id="form-title">
+                <label class="form-label mt-4">제목</label>
+                <input type="text" class="form-control" th:if="${board}" th:value="${board.title}" th:id="title" placeholder="내용을 입력하세요.">
+                <input type="text" class="form-control" th:unless="${board}" th:id="title" placeholder="내용을 입력하세요.">
+              </div>
+              <div class="form-group" id="form-writer">
+                <label class="form-label mt-4">작성자명</label>
+                <input type="text" th:id="writer" class="form-control" th:if="${board}" th:value="${board.writer}" name="writer" placeholder="이름을 입력하세요.">
+                <input type="text" th:id="writer" class="form-control" th:unless="${board}" name="writer" placeholder="이름을 입력하세요.">
+              </div>
+
+              <div class="form-group" id="form-contents">
+                <label class="form-label mt-4"></label>
+                <textarea class="form-control" th:id="contents" rows="10"
+                          placeholder="내용을 입력하세요." th:if="${board}" th:text="${board.contents}"></textarea>
+                <textarea class="form-control" th:id="contents" rows="10"
+                          placeholder="내용을 입력하세요." th:unless="${board}"></textarea>
+              </div>
+
+              <a href="#" style="float: right" class="btn btn-primary" th:unless="${board}" th:onclick="'javascript:boardWrite();'">등록</a>
+              <a href="#" style="float: right" class="btn btn-primary" th:if="${board}" th:onclick="'javascript:boardUpdate('+${board.id}+');'">수정</a>
+
+            </fieldset>
+
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+</main>
+
+
+</body>
+
+</html>
