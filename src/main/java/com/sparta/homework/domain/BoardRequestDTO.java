@@ -16,5 +16,4 @@ public class BoardRequestDTO {
 
 	private String writer;
 
-
 }
